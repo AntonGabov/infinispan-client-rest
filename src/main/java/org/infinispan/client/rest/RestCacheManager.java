@@ -6,6 +6,8 @@ import java.util.Map;
 import org.infinispan.client.rest.api.RestCache;
 import org.infinispan.client.rest.api.RestCacheContainer;
 import org.infinispan.client.rest.impl.RestCacheImpl;
+import org.infinispan.client.rest.impl.transport.Transport;
+import org.infinispan.client.rest.impl.transport.TransportFactory;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 
@@ -19,13 +21,12 @@ public class RestCacheManager implements RestCacheContainer {
 
    private String host;
    private String port;
+   protected Transport transport;
 
    private volatile boolean isStarted = false;
    private final Map<String, RestCache<?, ?>> cacheContainer = new HashMap<>();
 
-   private
-
-   RestCacheManager(String host, String port) {
+   public RestCacheManager(String host, String port) {
       this.host = host;
       this.port = port;
       start();
@@ -53,6 +54,10 @@ public class RestCacheManager implements RestCacheContainer {
 
    @Override
    public void start() {
+      TransportFactory transportFactory = new TransportFactory();
+      transportFactory.start(host, port);
+      transport = transportFactory.getTransport("");
+      transport.start();
       log.info("RestManager is started");
       isStarted = true;
    }
@@ -62,7 +67,8 @@ public class RestCacheManager implements RestCacheContainer {
       synchronized (cacheContainer) {
          cacheContainer.clear();
       }
-
+      transport.stop();
+      
       log.info("RestManager is stopped");
       isStarted = false;
    }
@@ -79,7 +85,7 @@ public class RestCacheManager implements RestCacheContainer {
     * @return a cache instance
     */
    private <K, V> RestCache<K, V> createCache(String cacheName) {
-      RestCache<K, V> newCache = new RestCacheImpl<>(this, cacheName);
+      RestCache<K, V> newCache = new RestCacheImpl<>(this, transport, cacheName);
       newCache.start();
       return newCache;
    }
