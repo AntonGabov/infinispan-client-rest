@@ -1,23 +1,19 @@
 package org.infinispan.client.rest.impl.transport;
 
+import java.util.List;
+
+import org.infinispan.client.rest.configuration.Server;
 import org.infinispan.client.rest.impl.transport.netty.NettyTransport;
 
 public class TransportFactory {
       
-   private String host;
-   private String port;
+   private List<Server> serverList;
    
-   public void start(String host, String port) {
-      this.host = host;
-      this.port = port;
+   public void start(List<Server> serverList) {
+      this.serverList = serverList;
    }
    
-   public Transport getTransport(String key) {
-      Transport transport = null;
-      switch (key) {
-         default:
-            transport = new NettyTransport(host, port);
-      }
-      return transport;
+   public Transport getNettyTransport() {
+      return new NettyTransport(serverList);
    }
 }

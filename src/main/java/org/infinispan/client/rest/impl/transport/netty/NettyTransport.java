@@ -1,9 +1,13 @@
 package org.infinispan.client.rest.impl.transport.netty;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
 
+import org.infinispan.client.rest.configuration.Server;
 import org.infinispan.client.rest.impl.transport.Transport;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
@@ -34,19 +38,16 @@ public class NettyTransport implements Transport {
 
    private static final Log log = LogFactory.getLog(NettyTransport.class);
 
-   public static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
-   public static final String URI_BASIS = "/rest/default";
+   public static final String URI_BASIS = "/rest";
    private static final int MAX_CONTENT_LENGTH = 10 * 1024 * 1024;
 
    private Bootstrap bootstrap;
    private EventLoopGroup workerGroup;
 
-   private String host;
-   private String port;
+   private List<Server> serverList;
 
-   public NettyTransport(String host, String port) {
-      this.host = host;
-      this.port = port;
+   public NettyTransport(List<Server> serverList) {
+      this.serverList = serverList;
    }
 
    @Override
@@ -69,14 +70,17 @@ public class NettyTransport implements Transport {
 
    @Override
    public void write(Object cacheName, Object key, Object value) {
+      serverList.forEach(server -> write(server, cacheName, key, value));
+   }
+
+   private void write(Server server, Object cacheName, Object key, Object value) {
       ByteBuf content = Unpooled.wrappedBuffer(obj2byteArray(value));
 
-      DefaultFullHttpRequest put = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.PUT, getUri(key),
+      DefaultFullHttpRequest put = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.PUT, getUri(cacheName, key),
             content);
-      put.headers().add("Content-Type", CONTENT_TYPE);
       put.headers().add("Content-Length", content.readableBytes());
 
-      Channel ch = bootstrap.connect(host, Integer.valueOf(port)).awaitUninterruptibly().channel().pipeline()
+      Channel ch = bootstrap.connect(server.getHost(), Integer.valueOf(server.getPort())).awaitUninterruptibly().channel().pipeline()
             .addLast(new HttpResponseHandler()).channel();
       try {
          ch.writeAndFlush(put).sync().channel().closeFuture().sync();
@@ -84,14 +88,26 @@ public class NettyTransport implements Transport {
          log.warn("Cannot perform a PUT request");
       }
    }
-
+   
    @Override
-   public byte[] read(Object cacheName, Object key) {
+   public Object read(Object cacheName, Object key) {
+      Object data = null;
+      for (int i = 0; i < serverList.size(); i++) {
+         byte[] readInfo = read(serverList.get(i), cacheName, key);
+         if (readInfo != null) {
+            data = byteArray2Object(readInfo);
+            break;
+         }
+      } 
+      return data;
+   }
+
+   private byte[] read(Server server, Object cacheName, Object key) {
       byte[] data = null;
       try {
-         DefaultHttpRequest get = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, getUri(key));
+         DefaultHttpRequest get = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, getUri(cacheName, key));
          HttpResponseHandler handler = new HttpResponseHandler(true);
-         Channel ch = bootstrap.connect(host, Integer.valueOf(port)).awaitUninterruptibly().channel().pipeline()
+         Channel ch = bootstrap.connect(server.getHost(), Integer.valueOf(server.getPort())).awaitUninterruptibly().channel().pipeline()
                .addLast(new HttpObjectAggregator(MAX_CONTENT_LENGTH), handler).channel();
          ch.writeAndFlush(get).sync().channel().closeFuture().sync();
 
@@ -112,7 +128,7 @@ public class NettyTransport implements Transport {
       }
       return data;
    }
-
+   
    private byte[] obj2byteArray(Object value) {
       byte[] data = null;
       try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -124,6 +140,19 @@ public class NettyTransport implements Transport {
          data = bos.toByteArray();
       } catch (IOException e) {
          log.warn("Cannot convert to byte array");
+      }
+      return data;
+   }
+   
+   private Object byteArray2Object(byte[] value) {
+      Object data = null;
+      try (ByteArrayInputStream bais = new ByteArrayInputStream(value);
+         ObjectInputStream ois = new ObjectInputStream(bais);) {
+         data = ois.readObject();
+         ois.close();
+         bais.close();
+      } catch (IOException | ClassNotFoundException e) {
+         log.warn("Cannot convert to Object");
       }
       return data;
    }

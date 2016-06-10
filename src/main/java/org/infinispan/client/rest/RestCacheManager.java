@@ -1,34 +1,31 @@
 package org.infinispan.client.rest;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.infinispan.client.rest.api.RestCache;
 import org.infinispan.client.rest.api.RestCacheContainer;
+import org.infinispan.client.rest.configuration.Server;
 import org.infinispan.client.rest.impl.RestCacheImpl;
 import org.infinispan.client.rest.impl.transport.Transport;
 import org.infinispan.client.rest.impl.transport.TransportFactory;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 
-// TODO: Implement operations and transport factories!
 public class RestCacheManager implements RestCacheContainer {
 
    private static final Log log = LogFactory.getLog(RestCacheManager.class);
-   public static final String DEFAULT_CACHE_NAME = "___defaultcache";
-   public static final String DEFAULT_HOST = "127.0.0.1";
-   public static final String DEFAULT_PORT = "8080";
+   public static final String DEFAULT_CACHE_NAME = "default";
 
-   private String host;
-   private String port;
+   private List<Server> serverList;
    protected Transport transport;
 
    private volatile boolean isStarted = false;
    private final Map<String, RestCache<?, ?>> cacheContainer = new HashMap<>();
 
-   public RestCacheManager(String host, String port) {
-      this.host = host;
-      this.port = port;
+   public RestCacheManager(List<Server> serverList) {
+      this.serverList = serverList;
       start();
    }
 
@@ -55,8 +52,8 @@ public class RestCacheManager implements RestCacheContainer {
    @Override
    public void start() {
       TransportFactory transportFactory = new TransportFactory();
-      transportFactory.start(host, port);
-      transport = transportFactory.getTransport("");
+      transportFactory.start(serverList);
+      transport = transportFactory.getNettyTransport();
       transport.start();
       log.info("RestManager is started");
       isStarted = true;

@@ -8,6 +8,6 @@ public interface Transport {
    
    void write(Object cacheName, Object key, Object value);
    
-   byte[] read(Object cacheName, Object key);
+   Object read(Object cacheName, Object key);
 
 }
