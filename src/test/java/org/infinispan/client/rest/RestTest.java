@@ -4,7 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.infinispan.client.rest.RestCacheManager;
-import org.infinispan.client.rest.configuration.Server;
+import org.infinispan.client.rest.configuration.ServerConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,14 +13,14 @@ import org.junit.Assert;
 
 public class RestTest {
 
-   private static List<Server> serverList;
+   private static List<ServerConfiguration> serverList;
    private static RestCacheManager mng;
 
    @Before
    public void setup() {
-      serverList = new LinkedList<Server>();
-      serverList.add(new Server("127.0.0.1", "8080"));
-      mng = new RestCacheManager(serverList);
+      serverList = new LinkedList<ServerConfiguration>();
+      serverList.add(new ServerConfiguration("127.0.0.1", "8080"));
+      mng = new RestCacheManager();
    }
    
    @After 

@@ -6,27 +6,35 @@ import java.util.Map;
 
 import org.infinispan.client.rest.api.RestCache;
 import org.infinispan.client.rest.api.RestCacheContainer;
-import org.infinispan.client.rest.configuration.Server;
+import org.infinispan.client.rest.configuration.Configuration;
+import org.infinispan.client.rest.configuration.ConfigurationBuilder;
+import org.infinispan.client.rest.configuration.ServerConfiguration;
 import org.infinispan.client.rest.impl.RestCacheImpl;
 import org.infinispan.client.rest.impl.transport.Transport;
 import org.infinispan.client.rest.impl.transport.TransportFactory;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
+import org.infinispan.commons.util.Util;
 
 public class RestCacheManager implements RestCacheContainer {
 
-   private static final Log log = LogFactory.getLog(RestCacheManager.class);
+   //private static final Log log = LogFactory.getLog(RestCacheManager.class);
    public static final String DEFAULT_CACHE_NAME = "default";
 
-   private List<Server> serverList;
    protected Transport transport;
+   protected Configuration configuration;
 
    private volatile boolean isStarted = false;
    private final Map<String, RestCache<?, ?>> cacheContainer = new HashMap<>();
 
-   public RestCacheManager(List<Server> serverList) {
-      this.serverList = serverList;
+   public RestCacheManager() {
+      createConfiguration();
       start();
+   }
+
+   private void createConfiguration() {
+      ConfigurationBuilder builder = new ConfigurationBuilder();
+      this.configuration = builder.create();
    }
 
    @Override
@@ -51,11 +59,9 @@ public class RestCacheManager implements RestCacheContainer {
 
    @Override
    public void start() {
-      TransportFactory transportFactory = new TransportFactory();
-      transportFactory.start(serverList);
-      transport = transportFactory.getNettyTransport();
-      transport.start();
-      log.info("RestManager is started");
+      transport = Util.getInstance(configuration.transport());
+      transport.start(configuration);
+      //log.info("RestManager is started");
       isStarted = true;
    }
 
@@ -66,7 +72,7 @@ public class RestCacheManager implements RestCacheContainer {
       }
       transport.stop();
       
-      log.info("RestManager is stopped");
+      //log.info("RestManager is stopped");
       isStarted = false;
    }
 
