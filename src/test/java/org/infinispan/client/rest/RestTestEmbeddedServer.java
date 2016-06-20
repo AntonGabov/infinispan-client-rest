@@ -20,7 +20,7 @@ public class RestTestEmbeddedServer extends RestServerTestBase {
    @Before
    public void setup() throws Exception {
       EmbeddedCacheManager cm1 = TestCacheManagerFactory.createCacheManager();
-      addServer("1", cm1, new RestServerConfigurationBuilder().port(8181).build());
+      addServer("1", cm1, new RestServerConfigurationBuilder().port(8080).build());
 
       startServers();
       startCacheManager();
