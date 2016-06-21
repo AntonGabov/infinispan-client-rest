@@ -39,7 +39,7 @@ public class ConfigurationBuilder {
    
    public Configuration create() {
       if (servers.isEmpty()) {
-         servers.add(new ServerConfiguration(ConfigurationProperties.DEFAULT_HOST, ConfigurationProperties.DEFAULT_PORT));
+         addServer(ConfigurationProperties.DEFAULT_HOST, ConfigurationProperties.DEFAULT_PORT);
       }
       return new Configuration(transport, servers);
    }

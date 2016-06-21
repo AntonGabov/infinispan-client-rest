@@ -1,45 +1,49 @@
 package org.infinispan.client.rest;
 
-import java.util.LinkedList;
-import java.util.List;
+import static org.testng.AssertJUnit.assertTrue;
 
-import org.infinispan.client.rest.configuration.ServerConfiguration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.rest.RestServerTestBase;
 import org.infinispan.rest.configuration.RestServerConfigurationBuilder;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
+@Test(testName = "rest.client.RestTestEmbeddedServer")
 public class RestTestEmbeddedServer extends RestServerTestBase {
-   private static List<ServerConfiguration> serverList;
+   
+   private static final String DEFAULT_CACHE_NAME = "default";
    private static RestCacheManager mng;
 
-   @Before
-   public void setup() throws Exception {
-      EmbeddedCacheManager cm1 = TestCacheManagerFactory.createCacheManager();
-      addServer("1", cm1, new RestServerConfigurationBuilder().port(8080).build());
-
-      startServers();
-      startCacheManager();
+   @BeforeClass
+   public void setup() throws Exception {      
+      setupServers();
+      setupClient();
    }
    
-   private void startCacheManager() {
-      serverList = new LinkedList<ServerConfiguration>();
-      serverList.add(new ServerConfiguration("127.0.0.1", "8080"));
+   @AfterClass 
+   public void finish() throws Exception {
+      stopServers();
+      stopClient();
+   }
+   
+   private void setupServers() throws Exception {
+      EmbeddedCacheManager cm = TestCacheManagerFactory.createCacheManager();
+      addServer("0", cm, new RestServerConfigurationBuilder().port(8080).build());
+      cm.getCache(DEFAULT_CACHE_NAME);
+      startServers();
+   }
+
+   private void setupClient() {
       mng = new RestCacheManager();
    }
 
-   @After 
-   public void finish() throws Exception {
-      stopServers();
+   private void stopClient() {
       mng.stop();
    }
 
-   @Test
-   public void test() {
+   public void testGetAndPutRqsts() {
       String key1 = "Test1";
       String key2 = "Test2";
       String value1 = "Cool";
@@ -48,7 +52,7 @@ public class RestTestEmbeddedServer extends RestServerTestBase {
       mng.getCache().put(key1, value1);
       mng.getCache().put(key2, value2);
 
-      Assert.assertTrue(value1.equals((String) mng.getCache().get(key1)));
-      Assert.assertTrue(value2.equals((String) mng.getCache().get(key2)));
+      assertTrue(value1.equals((String) mng.getCache().get(key1)));
+      assertTrue(value2.equals((String) mng.getCache().get(key2)));
    }
 }

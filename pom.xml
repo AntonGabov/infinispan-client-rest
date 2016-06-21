@@ -5,12 +5,15 @@
 	<artifactId>infinispan-client-rest</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>SmartClientHttp2Infinispan</name>
+	<properties>
+		<version.infinispan>9.0.0.Alpha2</version.infinispan>
+	</properties>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>org.infinispan</groupId>
 				<artifactId>infinispan-bom</artifactId>
-				<version>9.0.0.Alpha2</version>
+				<version>${version.infinispan}</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -24,14 +27,21 @@
 		<dependency>
 			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-server-rest</artifactId>
-			<version>9.0.0.Alpha2</version>
+			<version>${version.infinispan}</version>
 			<scope>test</scope>
 			<type>test-jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.infinispan</groupId>
+			<artifactId>infinispan-server-rest</artifactId>
+			<version>${version.infinispan}</version>
+			<scope>test</scope>
+			<classifier>classes</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.infinispan</groupId>
 			<artifactId>infinispan-core</artifactId>
-			<version>9.0.0.Alpha2</version>
+			<version>${version.infinispan}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
