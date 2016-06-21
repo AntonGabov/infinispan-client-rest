@@ -10,29 +10,32 @@ import java.util.concurrent.TimeUnit;
 
 import org.infinispan.client.rest.RestCacheManager;
 import org.infinispan.client.rest.api.RestCache;
+import org.infinispan.client.rest.impl.transport.Transport;
 import org.infinispan.commons.logging.Log;
 import org.infinispan.commons.logging.LogFactory;
 
 public class RestCacheImpl<K, V> implements RestCache<K, V> {
 
-   private static final Log log = LogFactory.getLog(RestCacheImpl.class, Log.class);
-   private static final boolean trace = log.isTraceEnabled();
+   //private static final Log log = LogFactory.getLog(RestCacheImpl.class, Log.class);
+   //private static final boolean trace = log.isTraceEnabled();
 
    private final String name;
    private final RestCacheManager restCacheManager;
+   private final Transport transport;
    private long defaultLifespan;
    private long defaultMaxIdleTime;
 
-   public RestCacheImpl(RestCacheManager rcm, String name) {
-      this(rcm, name, 0, 0);
+   public RestCacheImpl(RestCacheManager rcm, Transport transport, String name) {
+      this(rcm, name, transport, 0, 0);
    }
 
-   public RestCacheImpl(RestCacheManager rcm, String name, long defaultLifespan, long defaultMaxIdleTime) {
-      if (trace) {
-         log.tracef("Creating rest cache: %s", name);
-      }
+   public RestCacheImpl(RestCacheManager rcm, String name, Transport transport, long defaultLifespan, long defaultMaxIdleTime) {
+//      if (trace) {
+//         log.tracef("Creating rest cache: %s", name);
+//      }
       this.name = name;
       this.restCacheManager = rcm;
+      this.transport = transport;
       this.defaultLifespan = defaultLifespan;
       this.defaultMaxIdleTime = defaultMaxIdleTime;
    }
@@ -79,8 +82,8 @@ public class RestCacheImpl<K, V> implements RestCache<K, V> {
 
    @Override
    public V put(K key, V value, long lifespan, TimeUnit lifespanUnit, long maxIdleTime, TimeUnit maxIdleTimeUnit) {
-      // TODO: IMPLEMENT IT
-      return null;
+      transport.write(name, key, value);
+      return value;
    }
 
    @Override
@@ -245,8 +248,7 @@ public class RestCacheImpl<K, V> implements RestCache<K, V> {
 
    @Override
    public V get(Object key) {
-      // TODO: IMPLEMENT IT
-      return null;
+      return (V) transport.read(name, key);
    }
 
    @Override
@@ -277,16 +279,16 @@ public class RestCacheImpl<K, V> implements RestCache<K, V> {
 
    @Override
    public void start() {
-      if (log.isDebugEnabled()) {
-         log.debugf("Start called, nothing to do here(%s)", getName());
-      }
+//      if (log.isDebugEnabled()) {
+//         log.debugf("Start called, nothing to do here(%s)", getName());
+//      }
    }
 
    @Override
    public void stop() {
-      if (log.isDebugEnabled()) {
-         log.debugf("Stop called, nothing to do here(%s)", getName());
-      }
+//      if (log.isDebugEnabled()) {
+//         log.debugf("Stop called, nothing to do here(%s)", getName());
+//      }
    }
 
 }
