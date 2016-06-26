@@ -1,7 +1,7 @@
 package org.infinispan.client.rest.impl;
 
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Collections;
 
 import org.infinispan.client.rest.configuration.ServerConfiguration;
 import org.infinispan.commons.logging.Log;
@@ -11,23 +11,23 @@ public class TopologyInfo {
    
    private static final Log log = LogFactory.getLog(TopologyInfo.class);
    
-   private AtomicInteger topologyId;
-   private Collection<ServerConfiguration> servers;
+   private final int topologyId;
+   private final Collection<ServerConfiguration> servers;
    
-   public TopologyInfo(AtomicInteger topologyId, Collection<ServerConfiguration> servers) {
+   public TopologyInfo(int topologyId, Collection<ServerConfiguration> servers) {
       this.topologyId = topologyId;
       this.servers = servers;
    }
    
-   public void updateTopologyId(int newTopolyId) {
-      topologyId.set(newTopolyId);
-   }
-   
    public int getTopolyId() {
-      return topologyId.get();
+      return topologyId;
    }
    
    public Collection<ServerConfiguration> servers() {
-      return servers;
+      return Collections.unmodifiableCollection(servers);
+   }
+
+   public TopologyInfo updateTopologyId(int retrievedTopologyId) {
+      return new TopologyInfo(retrievedTopologyId, servers);
    }
 }

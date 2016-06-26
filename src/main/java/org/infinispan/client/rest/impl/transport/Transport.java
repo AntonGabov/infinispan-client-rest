@@ -1,12 +1,10 @@
 package org.infinispan.client.rest.impl.transport;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.infinispan.client.rest.configuration.Configuration;
 
 public interface Transport {
    
-   void start(Configuration configuration, AtomicInteger initialTopologyId);
+   void start(Configuration configuration, int initialTopologyId);
    
    void stop();
    

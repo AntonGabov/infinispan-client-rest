@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.infinispan.client.rest.configuration.Configuration;
 import org.infinispan.client.rest.configuration.ServerConfiguration;
 import org.infinispan.client.rest.impl.TopologyInfo;
-import org.infinispan.client.rest.impl.protocol.CustomHttpHeaderNames;
+import org.infinispan.client.rest.impl.protocol.HttpHeaderNames;
 import org.infinispan.client.rest.impl.transport.Transport;
 import org.infinispan.client.rest.impl.transport.operations.HttpOperationsFactory;
 import org.infinispan.client.rest.marshall.MarshallUtil;
@@ -30,7 +30,7 @@ public class HttpTransport implements Transport {
    private HttpOperationsFactory operations;
 
    @Override
-   public void start(Configuration configuration, AtomicInteger initialTopologyId) {
+   public void start(Configuration configuration, int initialTopologyId) {
       this.configuration = configuration;
       initialServers.addAll(configuration.servers());
       topologyInfo = new TopologyInfo(initialTopologyId, initialServers);
@@ -90,9 +90,9 @@ public class HttpTransport implements Transport {
    }
    
    private void checkTopologyId(HttpResponse response) {
-      Integer retrievedTopologyId = response.headers().getInt(CustomHttpHeaderNames.TOPOLOGY_ID);
-      if (retrievedTopologyId != null && retrievedTopologyId.equals(topologyInfo.getTopolyId())) {
-         topologyInfo.updateTopologyId(retrievedTopologyId);
+      Integer retrievedTopologyId = response.headers().getInt(HttpHeaderNames.TOPOLOGY_ID);
+      if (retrievedTopologyId != null && !retrievedTopologyId.equals(topologyInfo.getTopolyId())) {
+         topologyInfo = topologyInfo.updateTopologyId(retrievedTopologyId);
       }
    }
 

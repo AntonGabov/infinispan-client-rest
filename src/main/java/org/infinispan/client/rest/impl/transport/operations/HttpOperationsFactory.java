@@ -2,7 +2,7 @@ package org.infinispan.client.rest.impl.transport.operations;
 
 import org.infinispan.client.rest.configuration.ServerConfiguration;
 import org.infinispan.client.rest.impl.TopologyInfo;
-import org.infinispan.client.rest.impl.protocol.CustomHttpHeaderNames;
+import org.infinispan.client.rest.impl.protocol.HttpHeaderNames;
 import org.infinispan.client.rest.impl.transport.http.HttpResponseHandler;
 import org.infinispan.client.rest.marshall.MarshallUtil;
 import org.infinispan.commons.logging.Log;
@@ -69,7 +69,7 @@ public class HttpOperationsFactory {
       DefaultFullHttpRequest put = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.PUT, getUri(cacheName, key),
             content);
       put.headers().add("Content-Length", content.readableBytes());
-      put.headers().add(CustomHttpHeaderNames.TOPOLOGY_ID, topologyInfo.getTopolyId());
+      put.headers().add(HttpHeaderNames.TOPOLOGY_ID, topologyInfo.getTopolyId());
 
       HttpResponseHandler handler = new HttpResponseHandler();
       Channel ch = bootstrap.connect(server.getHost(), Integer.valueOf(server.getPort())).awaitUninterruptibly().channel().pipeline()
@@ -85,7 +85,7 @@ public class HttpOperationsFactory {
    
    public HttpResponse getRequest(TopologyInfo topologyInfo, ServerConfiguration server, Object cacheName, Object key, int maxContentLength) {
       DefaultHttpRequest get = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, getUri(cacheName, key));
-      get.headers().add(CustomHttpHeaderNames.TOPOLOGY_ID, topologyInfo.getTopolyId());
+      get.headers().add(HttpHeaderNames.TOPOLOGY_ID, topologyInfo.getTopolyId());
       
       HttpResponseHandler handler = new HttpResponseHandler(true);
       Channel ch = bootstrap.connect(server.getHost(), Integer.valueOf(server.getPort())).awaitUninterruptibly().channel().pipeline()

@@ -57,7 +57,7 @@ public class RestCacheManager implements RestCacheContainer {
    @Override
    public void start() {
       transport = Util.getInstance(configuration.transport());
-      transport.start(configuration, new AtomicInteger(TransportConstants.DEFAULT_TOPOLOGY_ID));
+      transport.start(configuration, TransportConstants.DEFAULT_TOPOLOGY_ID);
       //log.info("RestManager is started");
       isStarted = true;
    }
