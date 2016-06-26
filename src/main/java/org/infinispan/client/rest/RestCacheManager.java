@@ -1,19 +1,16 @@
 package org.infinispan.client.rest;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.infinispan.client.rest.api.RestCache;
 import org.infinispan.client.rest.api.RestCacheContainer;
 import org.infinispan.client.rest.configuration.Configuration;
 import org.infinispan.client.rest.configuration.ConfigurationBuilder;
-import org.infinispan.client.rest.configuration.ServerConfiguration;
 import org.infinispan.client.rest.impl.RestCacheImpl;
 import org.infinispan.client.rest.impl.transport.Transport;
-import org.infinispan.client.rest.impl.transport.TransportFactory;
-import org.infinispan.commons.logging.Log;
-import org.infinispan.commons.logging.LogFactory;
+import org.infinispan.client.rest.impl.transport.TransportConstants;
 import org.infinispan.commons.util.Util;
 
 public class RestCacheManager implements RestCacheContainer {
@@ -60,7 +57,7 @@ public class RestCacheManager implements RestCacheContainer {
    @Override
    public void start() {
       transport = Util.getInstance(configuration.transport());
-      transport.start(configuration);
+      transport.start(configuration, TransportConstants.DEFAULT_TOPOLOGY_ID);
       //log.info("RestManager is started");
       isStarted = true;
    }

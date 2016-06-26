@@ -7,7 +7,7 @@ import io.netty.handler.codec.http.HttpResponse;
 
 public class HttpResponseHandler extends SimpleChannelInboundHandler<HttpResponse> {
 
-   private FullHttpResponse response;
+   private HttpResponse response;
 
    private boolean retainResponse;
 
@@ -19,9 +19,11 @@ public class HttpResponseHandler extends SimpleChannelInboundHandler<HttpRespons
       this.retainResponse = retainResponse;
    }
 
-   protected void channelRead0(ChannelHandlerContext ctx, HttpResponse msg) throws Exception {
+   protected void channelRead0(ChannelHandlerContext ctx, HttpResponse msg) throws Exception {    
       if (retainResponse) {
          this.response = ((FullHttpResponse) msg).retain();
+      } else {
+         this.response = msg;
       }
       ctx.close();
    };
@@ -31,7 +33,7 @@ public class HttpResponseHandler extends SimpleChannelInboundHandler<HttpRespons
       throw new Exception(cause);
    }
 
-   public FullHttpResponse getResponse() {
+   public HttpResponse getResponse() {
       return response;
    }
 
